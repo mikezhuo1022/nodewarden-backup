@@ -1,0 +1,33 @@
+  name: Backup NodeWarden to Jianguoyun
+
+  on:
+    workflow_dispatch:
+    schedule:
+      - cron: '0 22 * * *'
+
+  jobs:
+    backup:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Setup Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.12'
+
+        - name: Export NodeWarden backup and upload to Jianguoyun WebDAV
+          env:
+            NODEWARDEN_BASE_URL: ${{ secrets.NODEWARDEN_BASE_URL }}
+            NODEWARDEN_EMAIL: ${{ secrets.NODEWARDEN_EMAIL }}
+            NODEWARDEN_MASTER_PASSWORD: ${{ secrets.NODEWARDEN_MASTER_PASSWORD }}
+            WEBDAV_BASE_URL: https://dav.jianguoyun.com/dav
+            WEBDAV_USERNAME: ${{ secrets.JIANGUOYUN_WEBDAV_USERNAME }}
+            WEBDAV_PASSWORD: ${{ secrets.JIANGUOYUN_WEBDAV_PASSWORD }}
+            WEBDAV_REMOTE_DIR: nodewarden/github-actions
+            NODEWARDEN_INCLUDE_ATTACHMENTS: 'true'
+            REMOTE_RETENTION_COUNT: '60'
+            BACKUP_TIMEZONE: Asia/Shanghai
+            BACKUP_PREFIX: nodewarden_backup
+          run: python scripts/nodewarden_backup_to_webdav.py
